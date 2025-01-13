@@ -1,3 +1,6 @@
+// to run "music" you need: "buzzer", "timer"
+// to run "music" call "initMusic()" in main
+
 #ifndef MUSIC_H_
 #define MUSIC_H_
 
@@ -26,7 +29,7 @@ extern uint16_t beats;
 extern const uint16_t melodies[2][512][2];
 
 void initMusic();
-void setMelody(uint8_t newMelodyId);
+void setMelody(uint8_t melodyId);
 void TIM1_BRK_TIM15_IRQHandler();
 
 #endif /* MUSIC_H_ */
