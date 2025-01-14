@@ -1,3 +1,4 @@
+
 // to run "music" you need: "buzzer", "timer"
 // to run "music" call "initMusic()" in main
 
@@ -9,6 +10,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "buzzer.h"
+#include "timer.h"
 
 #define AS2 233
 #define B2	245
@@ -23,13 +26,13 @@
 #define E4	659
 #define F4	698
 
-extern uint8_t melody;
+
 extern uint16_t note;
 extern uint16_t beats;
-extern const uint16_t melodies[2][512][2];
+extern const uint16_t melodies[64];
 
 void initMusic();
-void setMelody(uint8_t melodyId);
+void setMelody();
 void TIM1_BRK_TIM15_IRQHandler();
 
 #endif /* MUSIC_H_ */
