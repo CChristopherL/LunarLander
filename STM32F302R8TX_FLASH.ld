@@ -37,7 +37,8 @@ _Min_Stack_Size = 0x400;	/* required amount of stack */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 16K
-  ROM    (rx)    : ORIGIN = 0x8000000,   LENGTH = 64K
+  ROM    (rx)    : ORIGIN = 0x8000000,   LENGTH = 16K
+  ROM2	  (rx)	  : ORIGIN = 0x8004000,   LENGTH = 48K
 }
 
 /* Sections */
@@ -162,6 +163,13 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+  
+  .runtime_data (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.runtime_data*)  /* Variables explicitly assigned to this section */
+    . = ALIGN(4);
+  } >ROM2
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :
