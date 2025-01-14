@@ -1,88 +1,9 @@
 #include "music.h"
-#include "buzzer.h"
-#include "timer.h"
 
-uint8_t melody = 0;
 uint16_t note = 0;
 uint16_t beats = 0;
 
-const uint16_t melodies[2][512][2] = {
-	{ // Main Menu Melody
-		{B2, 4}, // Note frequency, beats in length
-		{0, 4},
-		{FS3, 4},
-		{F4, 4},
-		{AS3, 4},
-		{DS4, 4},
-		{AS3, 4},
-		{CS4, 4},
-		{AS3, 4},
-		{CS4, 4},
-		{DS4, 4},
-		{B2, 12},
-		{0, 8},
-
-		{B2, 4},
-		{0, 4},
-		{FS3, 4},
-		{F4, 4},
-		{AS3, 4},
-		{DS4, 4},
-		{AS3, 4},
-		{CS4, 4},
-		{AS3, 4},
-		{CS4, 4},
-		{DS4, 4},
-		{B2, 12},
-		{0, 8},
-
-		{AS2, 4},
-		{0, 4},
-		{F3, 4},
-		{E4, 4},
-		{A3, 4},
-		{D4, 4},
-		{A3, 4},
-		{C4, 4},
-		{A3, 4},
-		{C4, 4},
-		{D4, 4},
-		{AS2, 12},
-		{0, 8},
-
-		{AS2, 4},
-		{0, 4},
-		{F3, 4},
-		{E4, 4},
-		{A3, 4},
-		{D4, 4},
-		{A3, 4},
-		{C4, 4},
-		{A3, 4},
-		{C4, 4},
-		{D4, 4},
-		{AS2, 12},
-		{0, 8},
-
-		{B2, 4},
-		{0, 4},
-		{FS3, 4},
-		{F4, 4},
-		{AS3, 4},
-		{DS4, 4},
-		{AS3, 4},
-		{CS4, 4},
-		{AS3, 4},
-		{CS4, 4},
-		{DS4, 4},
-		{B2, 12},
-		{0, 8}
-	},
-
-	{ // In-game Melody
-			{0, 4} // Note Frequency, beats in length
-	}
-};
+const uint16_t melodies[64] = {B2,0,FS3,F4,AS3,DS4,AS3,CS4,AS3,CS4,DS4,B2,B2,B2,0,0,B2,0,FS3,F4,AS3,DS4,AS3,CS4,AS3,CS4,DS4,B2,B2,B2,0,0,AS2,0,F3,E4,A3,D4,A3,C4,A3,C4,D4,AS2,AS2,AS2,0,0,AS2,0,F3,E4,A3,D4,A3,C4,A3,C4,D4,AS2,AS2,AS2,0,0,};
 
 void initMusic() {
 	initBuzzer();
@@ -90,19 +11,23 @@ void initMusic() {
 	setMelody(0);
 }
 
-void setMelody(uint8_t melodyId) {
-	beats = melodies[melodyId][0][1];
+void setMelody() {
+	beats = 4;
 	note = 0;
 }
 
 void TIM1_BRK_TIM15_IRQHandler() {
 	//TODO: Loop melody if the array has run out of notes
+
 	if (beats == 0) {
 		note++;
-		beats = melodies[melody][note][1];
-
+		beats = 4;
 	}
-	setFreq(melodies[melody][note][0]);
+	if (note >	 63) {
+			note = 0;
+		}
+
+	setFreq(melodies[note]);
 	beats--;
 
 	TIM15->SR &= ~0x0001; // Clear interrupt bit
