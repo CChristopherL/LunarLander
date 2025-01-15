@@ -3,7 +3,16 @@
 
 #include "led.h"
 
-void resetLED() {
+void initLEDs() {
+	// Enable clock for GPIOA, GPIOB, and GPIOC
+	RCC->AHBENR |= RCC_AHBPeriph_GPIOA;
+	RCC->AHBENR |= RCC_AHBPeriph_GPIOB;
+	RCC->AHBENR |= RCC_AHBPeriph_GPIOC;
+
+	resetLEDs();
+}
+
+void resetLEDs() {
 	// Reset red
 	GPIOB->OSPEEDR &= ~(0x00000003 << (4 * 2));
 	GPIOB->OTYPER &= ~(0x0001 << 4);
