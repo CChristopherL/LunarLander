@@ -1,0 +1,9 @@
+#ifndef LED_H_
+#define LED_H_
+
+void resetLED();
+void setRed();
+void setGreen();
+void setBlue();
+
+#endif /* LED_H_ */
