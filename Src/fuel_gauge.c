@@ -1,5 +1,4 @@
 #include "fuel_gauge.h"
-
 #include "led.h"
 
 void updateFuelGauge(uint32_t *runtime, uint16_t fuel) {
