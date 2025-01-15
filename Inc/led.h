@@ -1,7 +1,8 @@
 #ifndef LED_H_
 #define LED_H_
 
-void resetLED();
+void initLEDs();
+void resetLEDs();
 void setRed();
 void setGreen();
 void setBlue();
