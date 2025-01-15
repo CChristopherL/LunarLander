@@ -2,7 +2,7 @@
 
 int16_t sinLUT(int16_t x) {
 	// Initialize sin look up table
-	static const int16_t sinLut[512] = {
+	static const int16_t SIN_LUT[512] = {
 		     0,   201,   402,   603,   804,  1005,  1205,
 		  1406,  1606,  1806,  2005,  2205,  2404,  2603,
 		  2801,  2999,  3196,  3393,  3590,  3785,  3981,
@@ -77,7 +77,7 @@ int16_t sinLUT(int16_t x) {
 		 -2999, -2801, -2603, -2404, -2205, -2005, -1806,
 		 -1606, -1406, -1205, -1005,  -804,  -603,  -402,
 		  -201 };
-	return (x < 0) ? sinLut[(512 + (x & 511))] : sinLut[x & 511];
+	return (x < 0) ? SIN_LUT[(512 + (x & 511))] : SIN_LUT[x & 511];
 }
 
 int16_t cosLUT(int16_t x) {
