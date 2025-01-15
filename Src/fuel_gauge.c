@@ -18,8 +18,8 @@ void updateFuelGauge(uint32_t *runtime, uint16_t fuel) {
 	else if (fuel > 250) {
 		if (color != YELLOW) {
 			resetLEDs();
-			//setRed();
-			//setGreen();
+			setRed();
+			setGreen();
 			color = YELLOW;
 		}
 	}
