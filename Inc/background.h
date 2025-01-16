@@ -1,9 +1,8 @@
-#ifndef RENDERER_H_
-#define RENDERER_H_
+#ifndef BACKGROUND_H_
+#define BACKGROUND_H_
 
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <stdint.h>
 
 #define ESC 0x1B
@@ -14,4 +13,4 @@ void freeBatch(void** batchData);
 void refreshBatch(uint8_t batch);
 void refreshBackground();
 
-#endif /* RENDERER_H_ */
+#endif /* BACKGROUND_H_ */
