@@ -1,7 +1,7 @@
 #include "30010_io.h"
 #include "stm32f30x_conf.h"
 
-#include "renderer.h"
+#include "background.h"
 #include "math.h"
 
 void initDisplay(uint32_t *runtime) {
@@ -112,7 +112,7 @@ void refreshBatch(uint8_t batch) {
 	for (uint8_t y = 0; y < 32; y++) {
 		// Set the cursor position to the start of the row
 		//printf("Moving cursor to X: %d, Y: %d\n", (batch & 7) * 32 + 1, (batch >> 3) * 32 + y + 1);
-		printf("%c[%u;%uH", ESC, (batch >> 3) * 32 + y + 1, (batch & 7) * 32 + 1);
+		printf("%c[%u;%uH", ESC, ((batch >> 3) << 5) + y + 1, ((batch & 7) << 5) + 1);
 
 		// Stores all consecutive characters with identical foreground and background color
 		char* chunk = malloc(33 * sizeof(char));
@@ -122,7 +122,7 @@ void refreshBatch(uint8_t batch) {
 		uint8_t shiftX = 0;
 		for (uint8_t x = 0; x < 32; x++) {
 			// Current character's foreground or background color differ
-			if (((uint8_t*)batchData[1])[32 * y + x] != currentForegroundColor || ((uint8_t*)batchData[2])[32 * y + x] != currentBackgroundColor) {
+			if (((uint8_t*)batchData[1])[(y << 5) + x] != currentForegroundColor || ((uint8_t*)batchData[2])[(y << 5) + x] != currentBackgroundColor) {
 				// Print merged characters
 				printf("%s", chunk);
 
@@ -132,8 +132,8 @@ void refreshBatch(uint8_t batch) {
 				memset(chunk, '\0', (33 - x) * sizeof(char));
 
 				// Update to new foreground and background colors
-				currentForegroundColor = ((uint8_t*)batchData[1])[32 * y + x];
-				currentBackgroundColor = ((uint8_t*)batchData[2])[32 * y + x];
+				currentForegroundColor = ((uint8_t*)batchData[1])[(y << 5) + x];
+				currentBackgroundColor = ((uint8_t*)batchData[2])[(y << 5) + x];
 				printf("%c[%d;%dm", ESC, currentForegroundColor + 30, currentBackgroundColor + 40);
 
 				// Save distance into row where new chunk was created
@@ -141,7 +141,7 @@ void refreshBatch(uint8_t batch) {
 			}
 
 			// Add character to our merged characters
-			chunk[x - shiftX] = ((char*)batchData[0])[32 * y + x];
+			chunk[x - shiftX] = ((char*)batchData[0])[(y << 5) + x];
 		}
 
 		// End of row reached, so print and free our chunk
