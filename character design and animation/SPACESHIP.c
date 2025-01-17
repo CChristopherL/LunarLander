@@ -67,11 +67,11 @@ uint16_t pointing_left [] = {0x0720,0x0720,0x0720,0x07DC,0x07DF,0x07DF,0x07DF,0x
 
 
 		bg sort    fg hvid
-32 = 0000 0111 00100000 binør i hexa 0x0720
+//32 = 0000 0111 00100000 binør i hexa 0x0720
 
-219 = 0000 0111 11011011 binær, i hexa 0x07DB
+//219 = 0000 0111 11011011 binær, i hexa 0x07DB
 
-220 = 0000 0111 11011100 binær, i hexa 0x07DC
+//220 = 0000 0111 11011100 binær, i hexa 0x07DC
 
-223 = 0000 0111 11011111 binær, i hexa 0x07DF
+//223 = 0000 0111 11011111 binær, i hexa 0x07DF
 
