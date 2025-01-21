@@ -21,44 +21,81 @@ void initBackground(uint32_t *seed) {
 	}
 }
 
-uint16_t getBackgroundASCIICharacter(vector_t position, uint32_t seed) {
-	// TODO: Look into using flash memory to read recently cached backgrounds instead of recalculating background each frame
+int32_t getTerrainHeight(vector_t position, uint32_t seed) {
+	uint16_t terrainShift = (seed & 511);
+	return 87 - ((sinLUT((position.x << 3) + (terrainShift << 4)) - cosLUT(position.x << 2) + (terrainShift << 3)) >> 13);
+}
 
+int32_t getTerrainSlope(vector_t position, uint32_t seed) {
+	uint16_t terrainShift = (seed & 511);
+	return -(8 * cosLUT(8 * position.x + 16 * terrainShift) + 4 * sinLUT(4 * position.x)) >> 13;
+}
+
+uint16_t getBackgroundASCIICharacter(vector_t position, uint32_t seed, uint8_t checkingNeighbor) {
+
+	// TODO: Look into using flash memory to read recently cached backgrounds instead of recalculating background each frame
+	position.x = (position.x < 0) ? -1 * position.x & 511 : position.x & 511;
 	// Terrain
-	uint16_t terrainShift = ((seed << 8) & 511);
-	if (position.y > (87 - ((sinLUT((position.x << 3) + (terrainShift << 4)) - cosLUT(position.x << 2) + (terrainShift << 3)) >> 13))) {
+	uint16_t terrainShift = (seed & 511);
+	int32_t terrainHeight = getTerrainHeight(position, seed);
+
+	if (position.y > terrainHeight) {
 		uint8_t noiseCharacter = generateValueNoise(position, 8, seed);
 
+		// If the terrain is not lava, flat, and has room for at least 4 characters landing pad then draw landing pad
+		if (noiseCharacter != 2 && noiseCharacter != 1 && noiseCharacter != 0) {
+			int32_t terrainSlope = getTerrainSlope(position, seed);
+
+			if ((terrainSlope < 4) && (terrainSlope > -4) && (position.y < terrainHeight + 2)) {
+				if (checkingNeighbor) {
+					return 0b0101011111011111;
+				}
+
+				// If neigboring landing pad exists then there must be space for the rest
+				position.x--;
+				if (getBackgroundASCIICharacter(position, seed, 0) == 0b0101011111011111) {
+					return 0b0101011111011111;
+				}
+
+				// If no neighboring landing pad exists, then check if there is room for 4+ landing pads
+				position.x += 5;
+				if ((getBackgroundASCIICharacter(position, seed, 1) == 0b0101011111011111)) {
+					return 0b0101011111011111;
+				}
+			}
+		}
+			//TODO: REMOVE BACKGROUND GRID THINGY
 		switch (noiseCharacter) {
-			case(7): // Light gray
+			case(7): // White
 				//return 0b0011100001000000;
 				return 0b0011100010110010;
 
-			case(6): // Gray
+			case(6): // Light gray
 				//return 0b0011100000100110;
+
 				return 0b0011100010110001;
 
-			case(5): // Dark gray
+			case(5): // Gray
 				//return 0b0011100000100100;
 				return 0b0011100010110000;
 
-			case(4): // % Light black
+			case(4): // Dark gray
 				//return 0b0011100000100101;
 				return 0b1011100010110001;
 
-			case(3): // X black
+			case(3): // Dark dark gray
 				//return 0b1011100001011000;
 				return 0b1011100010110000;
 
-			case(2): // # Dark black
+			case(2): // # Dark red
 				//return 0b1000100000100011;
 				return 0b1000100011011011;
 
-			case(1): // W
+			case(1): // Red
 				//return 0b0000100001010111;
 				return 0b0000100011011011;
 
-			case(0): // M
+			case(0): // Orange
 				//return 0b0001100001001101;
 				return 0b0001100110110001;
 		}
@@ -136,7 +173,7 @@ uint16_t* getBackgroundASCIIImage(vector_t position, vector_t size, uint32_t *se
 			x = (x < 0) ? (x & 255) - 1: x & 255; // Wrap current character position around the screen x-direction
 			uint8_t y = position.y + r;
 			vector_t backgroundASCIICharacterPosition = {x, y};
-			backgroundASCIIImage[r * size.x + c] = getBackgroundASCIICharacter(backgroundASCIICharacterPosition, *seedPtr);
+			backgroundASCIIImage[r * size.x + c] = getBackgroundASCIICharacter(backgroundASCIICharacterPosition, *seedPtr, 0);
 		}
 	}
 
