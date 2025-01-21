@@ -43,20 +43,8 @@ int main(void)
 	uint8_t gameState = 1;
 
 	// Initialize Background (TODO: CHANGE THIS TO WHEN MAIN MENU PLAY BUTTON IS PRESSED)
-	initBackground((uint32_t*)635);
-
-	uint16_t platform[] = {
-	0x58DC,0x58DC,0x58DC,0x58DC,0x58DC,0x58DC,0x58DC,0x58DC,
-	0x38DF,0x38DF,0x38DF,0x38DF,0x38DF,0x38DF,0x38DF,0x38DF
-	};
-
-	vector_t pos1 = {50, 85};
-	vector_t size1 = {8, 2};
-
-	uint16_t gasCan[] = {0xF8DC,0x3820,0x3820,0x3820,0x3820,0x50DB,0x50DB,0x078BB};
-
-	vector_t pos2 = {165, 15};
-	vector_t size2 = {4, 2};
+	uint32_t seed = 133;
+	initBackground(&seed);
 
 	// Set runtime to zero upon game loop start
 	resetRuntime(&runtime);
@@ -76,11 +64,7 @@ int main(void)
 		} else if (gameState == 1) { // If the game is being played
 
 			// Update the lander
-			updateLander(&lander, (currentRuntime - previousRuntime), joystickState);
-
-			drawASCIIImage(platform, pos1, size1);
-
-			drawASCIIImage(gasCan, pos2, size2);
+			updateLander(&lander, (currentRuntime - previousRuntime), joystickState, seed);
 
 			// Update the fuel gauge led indicator
 			updateFuelGauge(&runtime, lander.fuel);
