@@ -1,0 +1,165 @@
+#include "joystick.h"
+#include "30010_io.h"
+#include "stm32f30x_conf.h"
+
+void initPins(void) {
+    // Enable GPIOA clock
+    RCC->AHBENR |= RCC_AHBPeriph_GPIOA;
+
+    // Set PA0 and PA1 to analog mode
+    GPIOA->MODER |= (3 << (0 * 2)) | (3 << (1 * 2));
+
+    // Disable pull-up/pull-down resistors on PA0 and PA1
+    GPIOA->PUPDR &= ~((3 << (0 * 2)) | (3 << (1 * 2)));
+}
+
+void initADC() {
+    // Set ADC clock to divide by 6 for slower conversion
+    RCC->CFGR2 &= ~RCC_CFGR2_ADCPRE12;
+    RCC->CFGR2 |= RCC_CFGR2_ADCPRE12_DIV6;
+
+    // Enable ADC12 peripheral clock
+    RCC->AHBENR |= RCC_AHBPeriph_ADC12;
+
+    // Reset ADC configuration and disable it
+    ADC1->CR = 0x00000000;
+
+    // Ensure single conversion and reset sequence length
+    ADC1->CFGR &= 0xFDFFC007;
+    ADC1->SQR1 &= ~ADC_SQR1_L;
+
+    // Start calibration
+    ADC1->CR |= 0x10000000;
+    for (int i = 0; i < 1000; i++) {} // Wait for calibration to complete
+
+    // Enable ADC
+    ADC1->CR |= 0x80000000;
+    while (!(ADC1->CR & 0x80000000)); // Wait until ADC is ready
+
+    // Start ADC
+    ADC1->CR |= 0x00000001;
+    while (!(ADC1->ISR & 0x00000001)); // Wait until ready
+}
+
+void calibrateJoystick(JoystickCalibration *calibration) {
+    uint32_t pa0_sum = 0, pa1_sum = 0;
+    uint16_t pa0_temp, pa1_temp;
+
+    // Take 100 readings from PA0 and PA1 to determine center
+    for (int i = 0; i < 100; i++) {
+        analogReadJoystick(&pa0_temp, &pa1_temp);
+        pa0_sum += pa0_temp;
+        pa1_sum += pa1_temp;
+    }
+
+    // Calculate center values
+    calibration->center_x = pa0_sum / 100;
+    calibration->center_y = pa1_sum / 100;
+
+    // Set joystick range (assumed 0 to 4095 for 12-bit ADC)
+    calibration->x_min = 0;
+    calibration->x_max = 4095;
+    calibration->y_min = 0;
+    calibration->y_max = 4095;
+
+    // Print calibration results
+    printf("Joystick calibrated: Center X = %d, Center Y = %d\n", calibration->center_x, calibration->center_y);
+}
+
+void analogReadJoystick(uint16_t *pa0_value, uint16_t *pa1_value) {
+    // Configure ADC for PA0 (Channel 1) and start conversion
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 1, ADC_SampleTime_1Cycles5);
+    ADC_StartConversion(ADC1);
+    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == 0); // Wait for conversion
+    *pa0_value = ADC_GetConversionValue(ADC1);
+
+    // Configure ADC for PA1 (Channel 2) and start conversion
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_2, 1, ADC_SampleTime_1Cycles5);
+    ADC_StartConversion(ADC1);
+    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == 0); // Wait for conversion
+    *pa1_value = ADC_GetConversionValue(ADC1);
+}
+
+int16_t joystickAdjust(uint16_t raw_value, JoystickPin pin, const JoystickCalibration *calibration) {
+    if (pin == PA0) {
+        // Adjust raw X value based on calibration and scale it
+        return (int16_t)((raw_value - calibration->center_x) * 1000 /
+                         (calibration->x_max - calibration->center_x));
+    } else if (pin == PA1) {
+        // Adjust raw Y value, accounting for direction and scale it
+        if (raw_value > calibration->center_y) {
+            return (int16_t)((raw_value - calibration->center_y) * 1000 /
+                             (calibration->y_max - calibration->center_y));
+        } else {
+            return (int16_t)((raw_value - calibration->center_y) * 1000 /
+                             (calibration->center_y - calibration->y_min));
+        }
+    }
+    return 0; // Return 0 if invalid pin
+}
+
+uint8_t readJoystickAnalog(int16_t pa0_adjusted, int16_t pa1_adjusted, int16_t hysteresis) {
+    uint8_t joystickState = 0;
+
+    // Check each direction with hysteresis to avoid noise
+    if (pa1_adjusted > 20 + hysteresis) {
+        joystickState |= (1 << 0); // Up
+    }
+    if (pa1_adjusted < -20 - hysteresis) {
+        joystickState |= (1 << 1); // Down
+    }
+    if (pa0_adjusted < -20 - hysteresis) {
+        joystickState |= (1 << 2); // Left
+    }
+    if (pa0_adjusted > 20 + hysteresis) {
+        joystickState |= (1 << 3); // Right
+    }
+    if ((pa0_adjusted) <= 20 && (pa1_adjusted) <= 20) {
+        joystickState |= (1 << 4); // Center
+    }
+
+    return joystickState; // Return joystick state as a bitmask
+}
+
+void updateBuffer(int16_t *buffer, int16_t new_value, int buffer_size) {
+    // Shift buffer values back and insert new value at index 0
+    for (int i = buffer_size - 1; i > 0; i--) {
+        buffer[i] = buffer[i - 1];
+    }
+    buffer[0] = new_value; // Place new value in the first position
+}
+
+int16_t calculateAverage(int16_t *buffer, int buffer_size) {
+    int32_t sum = 0;
+
+    // Sum all values in the buffer
+    for (int i = 0; i < buffer_size; i++) {
+        sum += buffer[i];
+    }
+
+    // Return average value
+    return (int16_t)(sum / buffer_size);
+}
+
+void initButtons(void) {
+    // Enable GPIO clock for PB0 and PB1
+    RCC->AHBENR |= RCC_AHBPeriph_GPIOB;
+
+    // Configure PB0 as input with pull-down resistor
+    GPIOB->MODER &= ~(3 << (0 * 2)); // Input mode
+    GPIOB->PUPDR |= (2 << (0 * 2));  // Pull-down
+
+    // Configure PB1 as input with pull-down resistor
+    GPIOB->MODER &= ~(3 << (1 * 2)); // Input mode
+    GPIOB->PUPDR |= (2 << (1 * 2));  // Pull-down
+}
+
+int readButton1(void) {
+    // Return status of PB0 (boost button)
+    return (GPIOB->IDR & (1 << 0)) ? 1 : 0;
+}
+
+int readButton2(void) {
+    // Return status of PB1 (shoot button)
+    return (GPIOB->IDR & (1 << 1)) ? 1 : 0;
+}
