@@ -24,12 +24,14 @@ uint8_t CheckBossKey(){
 }
 void system_clear(void) {
     // Send ANSI escape code to clear the screen
-    printf("\033[2J\033[H");
+
+	printf("\033[2J\033[H");
 }
 
 void BossKey(void) {
-    system_clear(); // Clear the console using 30010_io.h
-    printf("Boss Key Activated! Game hidden or minimized.\n");
+    system_clear(); // Clear the console using 30010_io.h, kan også burge jeres function hvis i aar lavet en ny 
+    printf("Boss Key Activated! Game hidden or minimized.\n"); // remove this or insert whatever you want showed on terminal 
+	// insert lcd clear here if necessary 
 
     // Halt execution to simulate game minimization
     while (1) {
@@ -40,3 +42,4 @@ void BossKey(void) {
     }
     printf("Returning to game...\n");
 }
+// main burde virke med if (CheckBossKey()) { BossKey() } 
