@@ -45,7 +45,7 @@ void initGameController() {
 	GPIOB->PUPDR |=  (0x00000002 << (5 * 2)); // Set push/pull register to pull-down (0x00 -No pull, 0x01 -Pull-up, 0x02 -Pull-down)
 }
 
-uint16_t readGameController() {
+uint8_t readGameController() {
     // Joystick Y
     ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 1, ADC_SampleTime_181Cycles5);
     ADC_StartConversion(ADC1);
