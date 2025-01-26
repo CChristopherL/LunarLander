@@ -44,7 +44,7 @@ void addToBuffer(uint16_t *asciiImage, vector_t position, vector_t size) {
 }
 
 // Helper function to clamp values within a range
-uint16_t clamp(uint16_t value, uint16_t min, uint16_t max) {
+static uint16_t clamp(uint16_t value, uint16_t min, uint16_t max) {
     if (value < min) return min;
     if (value > max) return max;
     return value;
