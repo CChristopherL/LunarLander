@@ -13,6 +13,5 @@ void pushBuffer();
 
 void displayASCIIImageWithBackground(uint16_t *asciiImage, vector_t position, vector_t size);
 void drawASCIIImage(uint16_t *asciiImage, vector_t position, vector_t size);
-//void drawASCIIImageWithBackground(uint16_t *asciiImage, vector_t position, vector_t size);
 
 #endif /* RENDERER_H_ */
