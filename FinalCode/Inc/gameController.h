@@ -13,6 +13,6 @@
 #define BUTTON_3 0b01000000
 
 void initGameController();
-uint16_t readGameController();
+uint8_t readGameController();
 
 #endif // JOYSTICK_H
