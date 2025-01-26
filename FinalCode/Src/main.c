@@ -107,7 +107,7 @@ int main() {
 		currentRuntime = runtime;
 
 		// Update melody
-		//updateMusic(&music, deltaTime, level);
+		updateMusic(&music, deltaTime, level);
 
 		// MAIN_MENU
 		if (gameState == MAIN_MENU) {
