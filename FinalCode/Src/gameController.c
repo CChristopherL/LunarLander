@@ -39,10 +39,11 @@ void initGameController() {
     GPIOB->MODER &= ~((3 << (1 * 2)) | (3 << (2 * 2))); // Input mode for PB1, PB2
     GPIOB->PUPDR |= (2 << (1 * 2)) | (2 << (2 * 2));    // Pull-down for PB1, PB2
 
-	GPIOB->MODER &= ~(0x00000003 << (5 * 2)); // Clear mode register
-	GPIOB->MODER |=  (0x00000000 << (5 * 2)); // Set mode register (0x00 –Input, 0x01 -Output, 0x02 -Alternate Function, 0x03 -Analog in/out)
-	GPIOB->PUPDR &= ~(0x00000003 << (5 * 2)); // Clear push/pull register
-	GPIOB->PUPDR |=  (0x00000002 << (5 * 2)); // Set push/pull register to pull-down (0x00 -No pull, 0x01 -Pull-up, 0x02 -Pull-down)
+    // Configure PB5 as input with pull-down resistors for boss key
+    GPIOB->MODER &= ~(0x00000003 << (5 * 2)); // Clear mode register
+    GPIOB->MODER |=  (0x00000000 << (5 * 2)); // Set mode register (0x00 –Input, 0x01 -Output, 0x02 -Alternate Function, 0x03 -Analog in/out)
+    GPIOB->PUPDR &= ~(0x00000003 << (5 * 2)); // Clear push/pull register
+    GPIOB->PUPDR |=  (0x00000002 << (5 * 2)); // Set push/pull register to pull-down (0x00 -No pull, 0x01 -Pull-up, 0x02 -Pull-down)
 }
 
 uint8_t readGameController() {
